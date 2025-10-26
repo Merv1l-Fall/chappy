@@ -13,4 +13,14 @@ const userItemSchema = z.object({
 	accessLevel: z.string(),
 });
 
-export { userInputSchema, userItemSchema };
+
+const channelItemSchema = z.object({
+	pk: z.string(),
+	sk: z.literal("METADATA"),
+	name: z.string().min(4),
+	isLocked: z.boolean(),
+	createdBy: z.string(),
+	createdAt: z.string().optional(),
+})
+
+export { userInputSchema, userItemSchema, channelItemSchema };
