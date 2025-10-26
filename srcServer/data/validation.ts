@@ -1,3 +1,4 @@
+import { access } from 'fs';
 import z from 'zod';
 
 const userInputSchema = z.object({
@@ -5,4 +6,12 @@ const userInputSchema = z.object({
 	password: z.string().min(6, 'Password must be at least 6 characters long'),
 });
 
-export { userInputSchema };
+const userItemSchema = z.object({
+	pk: z.string(),
+	sk: z.string(),
+	username: z.string(),
+	passwordHash: z.string(),
+	accessLevel: z.string(),
+});
+
+export { userInputSchema, userItemSchema };

@@ -3,14 +3,14 @@ import type { Router, Request, Response } from "express";
 import bcrypt from "bcrypt";
 import { createToken } from "../data/auth.js";
 import { db, tableName } from "../data/dynamoDb.js";
-import type { JwtResponse, UserBody, errorResponse } from "../data/types.js";
-import { userInputSchema } from "../data/validation.js";
+import type { JwtResponse, UserBody, UserItem, errorResponse } from "../data/types.js";
+import { userInputSchema, userItemSchema } from "../data/validation.js";
 import { QueryCommand } from "@aws-sdk/lib-dynamodb";
 
 const router: Router = express.Router();
 
 // Login endpoint
-router.post("/", async (req: Request<UserBody | JwtResponse>, res: Response<JwtResponse | errorResponse>) => {
+router.post("/login", async (req: Request<UserBody | JwtResponse>, res: Response<JwtResponse | errorResponse>) => {
 	const body: UserBody = req.body;
 
 	const parsed = userInputSchema.safeParse(body);
@@ -18,25 +18,63 @@ router.post("/", async (req: Request<UserBody | JwtResponse>, res: Response<JwtR
 		return  res.status(400).send({ error: "invalid Input"});
 	}
 
+	try {
 	const command = new QueryCommand({
 		TableName: tableName,
 		KeyConditionExpression: "pk = :value",
 		ExpressionAttributeValues: {
-			":value": `USER#${body.username}`,
+			":value": `USER#${body.username.toLowerCase()}`,
 		},
-	})
+	});
 
-	try {
 		const result =  await db.send(command);
-		if (!result.Items) {
-			console.log("User not found");
-			res.sendStatus(404)
-			return
+		const parsedItems = userItemSchema.array().safeParse(result.Items);
+
+		if (!parsedItems.success || parsedItems.data.length === 0) {
+			console.log("User not found or invalid data");
+			res.status(401).send({ error: "invalid username or password" });
+			return;
 		}
+
+		const user = parsedItems.data[0];
+		if (!user) {
+			console.log("User not found");
+			res.sendStatus(404);
+			return;
+		}
+		const passwordMatch = await bcrypt.compare(body.password, user.passwordHash);
+		if (!passwordMatch) {
+			console.log("Invalid password");
+			res.status(401).send({ error: "Invalid username or password" });
+			return;
+		}
+		
+
+		const token = createToken(user.pk.substring(5), user.accessLevel);
+		return res.status(200).send({ success: true, token });
 
 	} catch (error) {
 		console.error("Error fetching user:", error);
-		res.sendStatus(500);
+		res.status(500).send({ error: "Internal server error" });
 		return;
 	}
+});
+
+router.post("/register", async (req: Request<UserBody>, res: Response<JwtResponse | errorResponse>) => {
+	
+	const body: UserBody = req.body;
+	const parsed = userInputSchema.safeParse(body);
+	if (!parsed.success) {
+		return  res.status(400).send({ error: "invalid Input"});
+	}
+
+	try {
+		// Check if user already exists
+		const checkCommand = new QueryCommand({
+			TableName: tableName,
+			KeyConditionExpression: "pk = :value",
+			ExpressionAttributeValues: {
+				":value": `USER#${body.username.toLowerCase()}`,
+			},
+		});
 });
