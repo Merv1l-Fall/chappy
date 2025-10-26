@@ -2,11 +2,11 @@ import express from "express";
 import z from "zod";
 import type { Router, Request, Response } from "express";
 import bcrypt from "bcrypt";
-import { createToken } from "../data/auth.js";
+import { createToken, verifyToken } from "../data/auth.js";
 import { db, tableName } from "../data/dynamoDb.js";
 import type { JwtResponse, UserBody, UserItem, errorResponse } from "../data/types.js";
 import { userInputSchema, userItemSchema } from "../data/validation.js";
-import { PutCommand, QueryCommand } from "@aws-sdk/lib-dynamodb";
+import { PutCommand, QueryCommand, DeleteCommand } from "@aws-sdk/lib-dynamodb";
 
 const router: Router = express.Router();
 
@@ -42,10 +42,9 @@ router.post("/login", async (req: Request<UserBody | JwtResponse>, res: Response
 		// TypeScript thing ensure user is of type UserItem
 		const user = parsedItems.data[0];
 		if (!user) {
-			console.log("User not found");
-			res.sendStatus(404);
-			return;
+			return res.status(404).send({ error: "User not found" });
 		}
+
 		// Compare passwords
 		const passwordMatch = await bcrypt.compare(body.password, user.passwordHash);
 		if (!passwordMatch) {
@@ -117,6 +116,64 @@ router.post("/register", async (req: Request<UserBody>, res: Response<JwtRespons
 
 	} catch (error) {
 		console.error("Error checking existing user:", error);
+		return res.status(500).send({ error: "Internal server error" });
+	}
+});
+
+//Delete your own account
+router.delete("/delete", verifyToken, async (req: Request, res:  Response) => {
+
+	//for security reasons, require username and password to delete account
+	const body: UserBody = req.body;
+
+	// Validate input
+	const parsed = userInputSchema.safeParse(body);
+	if (!parsed.success) {
+		const errorDetails = z.flattenError(parsed.error);
+		return  res.status(400).send({ error: "invalid Input", details: errorDetails });
+	}
+
+	try {
+		// Check if user exists
+		const command = new QueryCommand({
+			TableName: tableName,
+			KeyConditionExpression: "pk = :value",
+			ExpressionAttributeValues: {
+				":value": `USER#${body.username.toLowerCase()}`,
+			},
+		});
+		const result = await db.send(command);
+		const parsedItems = userItemSchema.array().safeParse(result.Items);
+		if (!parsedItems.success || parsedItems.data.length === 0) {
+			return res.status(401).send({ error: "Invalid username or password" });
+		}
+		const user = parsedItems.data[0];
+		//Typescript thing to ensure user is of type UserItem
+		if (!user) {
+			return res.status(404).send({ error: "User not found" });
+		}
+
+		// Compare passwords
+		const passwordMatch = await bcrypt.compare(body.password, user.passwordHash);
+		if (!passwordMatch) {
+			return res.status(401).send({ error: "Invalid username or password" });
+		}
+		// Delete user
+		const deleteCommand = new DeleteCommand({
+			TableName: tableName,
+			Key: {
+				pk: user.pk,
+				sk: user.sk,
+			},
+		});
+		const deleteResult = await db.send(deleteCommand);
+		if (deleteResult) {
+			return res.status(200).send({ success: true });
+		} else {
+			return res.status(500).send({ error: "Failed to delete user" });
+		}
+	} catch (error) {
+		console.error("Error deleting user:", error);
 		return res.status(500).send({ error: "Internal server error" });
 	}
 });

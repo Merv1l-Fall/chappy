@@ -20,7 +20,7 @@ app.use(express.json());
 app.use("/", express.static("./dist"));
 
 //endpoint for user routes
-app.use("/users", userRouter);
+app.use("/user", userRouter);
 
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
