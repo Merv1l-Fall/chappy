@@ -1,4 +1,3 @@
-import { access } from 'fs';
 import z from 'zod';
 
 const userInputSchema = z.object({

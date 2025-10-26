@@ -23,4 +23,5 @@ export interface UserItem {
 
 export interface errorResponse {
 	error: string;
+	details?: any;
 }
