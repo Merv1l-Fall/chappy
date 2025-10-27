@@ -4,6 +4,7 @@
     // File Layout
     "rootDir": "./",
     "outDir": "../distServer",
+	"typeRoots": ["./node_modules/@types", "./data"],
 
     // Environment Settings
     // See also https://aka.ms/tsconfig/module

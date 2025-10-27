@@ -20,7 +20,7 @@ const channelItemSchema = z.object({
 	name: z.string().min(4),
 	isLocked: z.boolean(),
 	creatorId: z.string(),
-	createdAt: z.string().optional(),
+	createdAt: z.string(),
 })
 
 export { userInputSchema, userItemSchema, channelItemSchema };

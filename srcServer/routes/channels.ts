@@ -8,11 +8,19 @@ import { verifyToken } from "../data/auth.js";
 
 const router = express.Router();
 
+//Local types
+interface ChannelOutput{
+	id: string;
+	name: string;
+	creatorId: string;
+	createdAt?: string;
+	isLocked: boolean;
 
+}
 
 //Get all channels
 //TODO!!!! remove any and add type
-router.get("/", async (req: Request, res: Response<errorResponse | any>) => {
+router.get("/", async (req, res: Response<errorResponse | ChannelOutput[]>) => {
 	try {
 		//create scan command
 		const command = new ScanCommand({
@@ -54,8 +62,8 @@ router.get("/", async (req: Request, res: Response<errorResponse | any>) => {
 });
 
 //create a new channel
-// router.post("/", verifyToken, async (req: Request, res: Response) => {
+router.post("/", verifyToken, async (req: Request, res: Response) => {
 
-// });
+});
 
 export default router;

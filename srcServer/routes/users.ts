@@ -4,9 +4,9 @@ import type { Router, Request, Response } from "express";
 import bcrypt from "bcrypt";
 import { createToken, verifyToken } from "../data/auth.js";
 import { db, tableName } from "../data/dynamoDb.js";
-import type { JwtResponse, UserBody, UserItem, errorResponse } from "../data/types.js";
+import type { JwtResponse, TokenPayload, UserBody, UserItem, errorResponse } from "../data/types.js";
 import { userInputSchema, userItemSchema } from "../data/validation.js";
-import { PutCommand, QueryCommand, DeleteCommand } from "@aws-sdk/lib-dynamodb";
+import { PutCommand, QueryCommand, DeleteCommand, GetCommand } from "@aws-sdk/lib-dynamodb";
 
 const router: Router = express.Router();
 
@@ -122,40 +122,37 @@ router.post("/register", async (req: Request<UserBody>, res: Response<JwtRespons
 });
 
 //Delete your own account
-router.delete("/delete", verifyToken, async (req: Request, res:  Response) => {
+router.delete("/delete", verifyToken, async (req: Request<{password: string }>, res:  Response) => {
 
-	//for security reasons, require username and password to delete account
-	const body: UserBody = req.body;
-
-	// Validate input
-	const parsed = userInputSchema.safeParse(body);
-	if (!parsed.success) {
-		const errorDetails = z.flattenError(parsed.error);
-		return  res.status(400).send({ error: "invalid Input", details: errorDetails });
+	//for security reasons, require password to delete account
+	const {password} = req.body;
+	//validate
+	if(!password) {
+		return res.status(400).send({error: "Password required"})
 	}
+	//get username(userId) from JWT
+	const username = req.user?.userId
+	//validate
+	if(!username) {
+		return res.status(401).send({ error: "Invalid token payload" });
+	}
+
 
 	try {
 		// Check if user exists
-		const command = new QueryCommand({
+		const getUserCommand = new GetCommand({
 			TableName: tableName,
-			KeyConditionExpression: "pk = :value",
-			ExpressionAttributeValues: {
-				":value": `USER#${body.username.toLowerCase()}`,
-			},
+			Key: {pk: `USER#${username.toLowerCase()}`, sk: "METADATA"}
 		});
-		const result = await db.send(command);
-		const parsedItems = userItemSchema.array().safeParse(result.Items);
-		if (!parsedItems.success || parsedItems.data.length === 0) {
-			return res.status(401).send({ error: "Invalid username or password" });
+		const result = await db.send(getUserCommand);
+		if(!result.Item){
+			return res.status(404).send({ error: "User not found" });	
 		}
-		const user = parsedItems.data[0];
-		//Typescript thing to ensure user is of type UserItem
-		if (!user) {
-			return res.status(404).send({ error: "User not found" });
-		}
+		
+		const user = userItemSchema.parse(result.Item)
 
 		// Compare passwords
-		const passwordMatch = await bcrypt.compare(body.password, user.passwordHash);
+		const passwordMatch = await bcrypt.compare(password, user.passwordHash);
 		if (!passwordMatch) {
 			return res.status(401).send({ error: "Invalid username or password" });
 		}
@@ -167,12 +164,10 @@ router.delete("/delete", verifyToken, async (req: Request, res:  Response) => {
 				sk: user.sk,
 			},
 		});
-		const deleteResult = await db.send(deleteCommand);
-		if (deleteResult) {
-			return res.status(200).send({ success: true });
-		} else {
-			return res.status(500).send({ error: "Failed to delete user" });
-		}
+
+		await db.send(deleteCommand);
+		return res.status(200).send({ success: true, message: "Account deleted successfully" });
+	
 	} catch (error) {
 		console.error("Error deleting user:", error);
 		return res.status(500).send({ error: "Internal server error" });
