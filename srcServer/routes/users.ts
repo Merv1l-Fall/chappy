@@ -35,7 +35,7 @@ router.post("/login", async (req: Request<UserBody | JwtResponse>, res: Response
 
 		if (!parsedItems.success || parsedItems.data.length === 0) {
 			console.log("User not found or invalid data");
-			res.status(401).send({ error: "invalid username or password" });
+			res.status(401).send({ error: "invalid username or password",  });
 			return;
 		}
 
@@ -64,6 +64,7 @@ router.post("/login", async (req: Request<UserBody | JwtResponse>, res: Response
 	}
 });
 
+//register
 router.post("/register", async (req: Request<UserBody>, res: Response<JwtResponse | errorResponse>) => {
 	
 	// Validate input
