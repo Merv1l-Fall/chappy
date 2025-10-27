@@ -1,3 +1,5 @@
+import type { Request } from "express";
+
 //Token
 export interface TokenPayload{
 	userId: string;
@@ -25,7 +27,6 @@ export interface UserItem {
 export interface ChannelInput {
 	name: string;
 	isLocked: boolean;
-	creatorId: string
 }
 
 export interface ChannelItem{
@@ -41,3 +42,5 @@ export interface errorResponse {
 	error: string;
 	details?: any;
 }
+
+export type RequestBody<T> = Request<{}, {}, T>;

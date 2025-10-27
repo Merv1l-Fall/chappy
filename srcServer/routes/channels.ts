@@ -1,15 +1,15 @@
 import express, { type Request, type Response } from "express";
 import z from "zod";
 import { db, tableName } from "../data/dynamoDb.js";
-import { channelItemSchema } from "../data/validation.js";
-import type { ChannelItem, ChannelInput, errorResponse } from "../data/types.js";
-import { ScanCommand } from "@aws-sdk/lib-dynamodb";
+import { channelItemSchema, channelInputSchema } from "../data/validation.js";
+import type { ChannelItem, ChannelInput, errorResponse, RequestBody } from "../data/types.js";
+import { ScanCommand, QueryCommand } from "@aws-sdk/lib-dynamodb";
 import { verifyToken } from "../data/auth.js";
 
 const router = express.Router();
 
 //Local types
-interface ChannelOutput{
+interface ChannelOutput {
 	id: string;
 	name: string;
 	creatorId: string;
@@ -19,7 +19,6 @@ interface ChannelOutput{
 }
 
 //Get all channels
-//TODO!!!! remove any and add type
 router.get("/", async (req, res: Response<errorResponse | ChannelOutput[]>) => {
 	try {
 		//create scan command
@@ -62,8 +61,35 @@ router.get("/", async (req, res: Response<errorResponse | ChannelOutput[]>) => {
 });
 
 //create a new channel
-router.post("/", verifyToken, async (req: Request, res: Response) => {
+router.post("/", verifyToken, async (req: RequestBody<ChannelInput>, res: Response<ChannelOutput | errorResponse>) => {
+	const creatorId = req.user?.userId
+	if (!creatorId) {
+		return res.status(401).send({ error: "Invalid or expired token payload" })
+	}
 
+	const parsed = channelInputSchema.safeParse(req.body);
+	if (!parsed.success) {
+		return res.status(400).send({ error: "Invalid input", details: z.flattenError(parsed.error) });
+	}
+
+	const { name, isLocked } = parsed.data;
+	try {
+		//Check if channel already exists
+		const checkCommand = new QueryCommand({
+			TableName: tableName,
+			KeyConditionExpression: "pk = :value",
+			ExpressionAttributeValues: {
+				":value": `CHANNEL#${name.toLowerCase()}`,
+			},
+		});
+		const checkResult = await db.send(checkCommand)
+		if (checkResult.Items && checkResult.Items.length > 0) {
+			return res.status(401).send({ error: "channel already exists" });
+		}
+		//TODO create channel if it does not exist
+	} catch(error){
+
+	}
 });
 
 export default router;

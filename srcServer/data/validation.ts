@@ -23,4 +23,9 @@ const channelItemSchema = z.object({
 	createdAt: z.string(),
 })
 
-export { userInputSchema, userItemSchema, channelItemSchema };
+const channelInputSchema = z.object({
+  name: z.string().min(1, "Channel name is required"),
+  isLocked: z.boolean(),
+});
+
+export { userInputSchema, userItemSchema, channelItemSchema, channelInputSchema };

@@ -4,14 +4,14 @@ import type { Router, Request, Response } from "express";
 import bcrypt from "bcrypt";
 import { createToken, verifyToken } from "../data/auth.js";
 import { db, tableName } from "../data/dynamoDb.js";
-import type { JwtResponse, TokenPayload, UserBody, UserItem, errorResponse } from "../data/types.js";
+import type { JwtResponse, TokenPayload, UserBody, UserItem, errorResponse, RequestBody } from "../data/types.js";
 import { userInputSchema, userItemSchema } from "../data/validation.js";
 import { PutCommand, QueryCommand, DeleteCommand, GetCommand } from "@aws-sdk/lib-dynamodb";
 
 const router: Router = express.Router();
 
 // Login endpoint
-router.post("/login", async (req: Request<UserBody | JwtResponse>, res: Response<JwtResponse | errorResponse>) => {
+router.post("/login", async (req: RequestBody<UserBody>, res: Response<JwtResponse | errorResponse>) => {
 	const body: UserBody = req.body;
 
 	// Validate input
@@ -65,7 +65,7 @@ router.post("/login", async (req: Request<UserBody | JwtResponse>, res: Response
 });
 
 //register
-router.post("/register", async (req: Request<UserBody>, res: Response<JwtResponse | errorResponse>) => {
+router.post("/register", async (req: RequestBody<UserBody>, res: Response<JwtResponse | errorResponse>) => {
 	
 	// Validate input
 	const body: UserBody = req.body;
@@ -94,7 +94,7 @@ router.post("/register", async (req: Request<UserBody>, res: Response<JwtRespons
 		// Create new user item
 		const newUser: UserItem = {
 			pk: `USER#${body.username.toLowerCase()}`,
-			sk: "#METADATA",
+			sk: "METADATA",
 			username: body.username.toLowerCase(),
 			passwordHash,
 			accessLevel: "user",
@@ -122,7 +122,7 @@ router.post("/register", async (req: Request<UserBody>, res: Response<JwtRespons
 });
 
 //Delete your own account
-router.delete("/delete", verifyToken, async (req: Request<{password: string }>, res:  Response) => {
+router.delete("/delete", verifyToken, async (req: RequestBody<{password: string }>, res:  Response) => {
 
 	//for security reasons, require password to delete account
 	const {password} = req.body;
@@ -132,9 +132,10 @@ router.delete("/delete", verifyToken, async (req: Request<{password: string }>, 
 	}
 	//get username(userId) from JWT
 	const username = req.user?.userId
+	console.log(username)
 	//validate
 	if(!username) {
-		return res.status(401).send({ error: "Invalid token payload" });
+		return res.status(401).send({ error: "Invalid or expired token payload" });
 	}
 
 
