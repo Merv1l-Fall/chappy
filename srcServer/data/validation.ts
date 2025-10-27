@@ -19,7 +19,7 @@ const channelItemSchema = z.object({
 	sk: z.literal("METADATA"),
 	name: z.string().min(4),
 	isLocked: z.boolean(),
-	createdBy: z.string(),
+	creatorId: z.string(),
 	createdAt: z.string().optional(),
 })
 

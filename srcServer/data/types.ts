@@ -25,7 +25,7 @@ export interface UserItem {
 export interface ChannelInput {
 	name: string;
 	isLocked: boolean;
-	createdBy: string
+	creatorId: string
 }
 
 export interface ChannelItem{
@@ -33,7 +33,7 @@ export interface ChannelItem{
 	sk: string;
 	name: string;
 	isLocked: boolean;
-	createdBy: string;
+	creatorId: string;
 	createdAT?: string;
 }
 

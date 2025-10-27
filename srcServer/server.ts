@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import type { Express, RequestHandler } from 'express';
 import userRouter from './routes/users.js';
+import channelRouter from "./routes/channels.js"
 
 
 
@@ -21,6 +22,8 @@ app.use("/", express.static("./dist"));
 
 //endpoint for user routes
 app.use("/user", userRouter);
+app.use("/channels", channelRouter)
+
 
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
