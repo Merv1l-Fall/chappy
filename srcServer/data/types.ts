@@ -35,7 +35,7 @@ export interface ChannelItem{
 	name: string;
 	isLocked: boolean;
 	creatorId: string;
-	createdAT: string;
+	createdAt: string;
 }
 
 export interface errorResponse {

@@ -116,7 +116,7 @@ router.post("/register", async (req: RequestBody<UserBody>, res: Response<JwtRes
 		return res.status(201).send({ success: true, token });
 
 	} catch (error) {
-		console.error("Error checking existing user:", error);
+		console.error("Error registering a new user:", error);
 		return res.status(500).send({ error: "Internal server error" });
 	}
 });

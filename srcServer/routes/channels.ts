@@ -1,9 +1,10 @@
 import express, { type Request, type Response } from "express";
 import z from "zod";
 import { db, tableName } from "../data/dynamoDb.js";
+import { getTimeStamp } from "../data/getTimeStamp.js";
 import { channelItemSchema, channelInputSchema } from "../data/validation.js";
 import type { ChannelItem, ChannelInput, errorResponse, RequestBody } from "../data/types.js";
-import { ScanCommand, QueryCommand } from "@aws-sdk/lib-dynamodb";
+import { ScanCommand, QueryCommand, PutCommand } from "@aws-sdk/lib-dynamodb";
 import { verifyToken } from "../data/auth.js";
 
 const router = express.Router();
@@ -61,7 +62,7 @@ router.get("/", async (req, res: Response<errorResponse | ChannelOutput[]>) => {
 });
 
 //create a new channel
-router.post("/", verifyToken, async (req: RequestBody<ChannelInput>, res: Response<ChannelOutput | errorResponse>) => {
+router.post("/", verifyToken, async (req: RequestBody<ChannelInput>, res: Response<{message: string, channel: ChannelOutput} | errorResponse>) => {
 	const creatorId = req.user?.userId
 	if (!creatorId) {
 		return res.status(401).send({ error: "Invalid or expired token payload" })
@@ -84,11 +85,39 @@ router.post("/", verifyToken, async (req: RequestBody<ChannelInput>, res: Respon
 		});
 		const checkResult = await db.send(checkCommand)
 		if (checkResult.Items && checkResult.Items.length > 0) {
-			return res.status(401).send({ error: "channel already exists" });
+			return res.status(401).send({ error: "A channel with that name already exists" });
 		}
-		//TODO create channel if it does not exist
-	} catch(error){
+		//create new channel item
+		const newChannel: ChannelItem = {
+			pk: `CHANNEL#${name.toLowerCase()}`,
+			sk: "METADATA",
+			name: name,
+			isLocked: isLocked,
+			creatorId: creatorId,
+			createdAt: getTimeStamp({dateOnly: true}),
+		}
 
+		const putCommand = new PutCommand({
+			TableName: tableName,
+			Item: newChannel,
+		});
+
+		const result = await db.send(putCommand)
+
+		//log new channel
+		console.log("New channel created", result);
+		const channel = {
+			id: newChannel.pk.substring(5),
+			name: newChannel.name,
+			creatorId: newChannel.creatorId,
+			createdAt: newChannel.createdAt,
+			isLocked: newChannel.isLocked,
+		}
+
+		return res.status(201).send({message: "New channel created!", channel: channel} )
+	} catch(error){
+		console.error("error creating new channel", error)
+		return res.status(500).send({error: "internal server error"})
 	}
 });
 
