@@ -1,6 +1,6 @@
 import express from "express";
 import z from "zod";
-import type { Router, Request, Response } from "express";
+import type { Router, Response } from "express";
 import bcrypt from "bcrypt";
 import { createToken, verifyToken } from "../data/auth.js";
 import { db, tableName } from "../data/dynamoDb.js";

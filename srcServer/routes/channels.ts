@@ -107,7 +107,7 @@ router.post("/", verifyToken, async (req: RequestBody<ChannelInput>, res: Respon
 		//log new channel
 		console.log("New channel created", result);
 		const channel = {
-			id: newChannel.pk.substring(5),
+			id: newChannel.name.toLowerCase(),
 			name: newChannel.name,
 			creatorId: newChannel.creatorId,
 			createdAt: newChannel.createdAt,
