@@ -4,7 +4,7 @@ import type { Router, Response } from "express";
 import bcrypt from "bcrypt";
 import { createToken, verifyToken } from "../data/auth.js";
 import { db, tableName } from "../data/dynamoDb.js";
-import type { JwtResponse, TokenPayload, UserBody, UserItem, errorResponse, RequestBody } from "../data/types.js";
+import type { JwtResponse, successResponse, UserBody, UserItem, errorResponse, RequestBody } from "../data/types.js";
 import { userInputSchema, userItemSchema } from "../data/validation.js";
 import { PutCommand, QueryCommand, DeleteCommand, GetCommand } from "@aws-sdk/lib-dynamodb";
 
@@ -122,7 +122,7 @@ router.post("/register", async (req: RequestBody<UserBody>, res: Response<JwtRes
 });
 
 //Delete your own account
-router.delete("/delete", verifyToken, async (req: RequestBody<{password: string }>, res:  Response) => {
+router.delete("/delete", verifyToken, async (req: RequestBody<{password: string }>, res:  Response<successResponse | errorResponse>) => {
 
 	//for security reasons, require password to delete account
 	const {password} = req.body;

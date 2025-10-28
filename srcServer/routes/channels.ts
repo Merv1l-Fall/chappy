@@ -3,8 +3,8 @@ import z from "zod";
 import { db, tableName } from "../data/dynamoDb.js";
 import { getTimeStamp } from "../data/getTimeStamp.js";
 import { channelItemSchema, channelInputSchema } from "../data/validation.js";
-import type { ChannelItem, ChannelInput, errorResponse, RequestBody } from "../data/types.js";
-import { ScanCommand, QueryCommand, PutCommand } from "@aws-sdk/lib-dynamodb";
+import type { ChannelItem, ChannelInput, errorResponse, RequestBody, successResponse } from "../data/types.js";
+import { ScanCommand, QueryCommand, PutCommand, GetCommand, DeleteCommand } from "@aws-sdk/lib-dynamodb";
 import { verifyToken } from "../data/auth.js";
 
 const router = express.Router();
@@ -120,5 +120,41 @@ router.post("/", verifyToken, async (req: RequestBody<ChannelInput>, res: Respon
 		return res.status(500).send({error: "internal server error"})
 	}
 });
+
+router.delete("/:id", verifyToken, async (req: Request, res: Response<successResponse | errorResponse>) => {
+	const channelId = `CHANNEL#${req.params.id?.toLowerCase()}`
+	
+	const username = req.user?.userId
+	if(!username) {
+		return res.status(401).send({ error: "Invalid or expired token payload" });
+	}
+	try{
+		//check if channel exist and creatorId is correct
+		const getChannelCommand = new GetCommand({
+			TableName: tableName,
+			Key: {pk: channelId, sk: "METADATA"}
+		});
+		const result = await db.send(getChannelCommand);
+		if(!result.Item){
+			return res.status(404).send({ error: "Channel not found" });	
+		}
+
+		const channel = channelItemSchema.parse(result.Item)
+		//delete channel
+		const deleteCommand = new DeleteCommand({
+			TableName: tableName,
+			Key: {
+				pk: channel.pk,
+				sk: channel.sk,
+			}
+		})
+
+		await db.send(deleteCommand)
+		return res.status(200).send({ success: true, message: "Channel deleted successfully"})
+	} catch(error){
+		console.error("Error deleting channel:", error);
+		return res.status(500).send({ error: "Internal server error" });
+	}
+})
 
 export default router;

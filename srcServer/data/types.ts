@@ -24,6 +24,7 @@ export interface UserItem {
 	accessLevel: string;
 }
 
+//Channel
 export interface ChannelInput {
 	name: string;
 	isLocked: boolean;
@@ -38,9 +39,33 @@ export interface ChannelItem{
 	createdAt: string;
 }
 
+//Message
+export interface MessageItem {
+  pk: string;
+  sk: string;
+  senderId: string;
+  message: {
+    parts: {
+      type: "text" | "image";
+      content: string;
+      metadata?: Record<string, any>;
+    }[];
+  };
+  timestamp: string;
+}
+
+
+
+//Response
 export interface errorResponse {
 	error: string;
 	details?: any;
 }
 
+export interface successResponse {
+	message: string;
+	success: boolean;
+}
+
+//request
 export type RequestBody<T> = Request<{}, {}, T>;

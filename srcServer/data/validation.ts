@@ -28,4 +28,20 @@ const channelInputSchema = z.object({
   isLocked: z.boolean(),
 });
 
+export const messageItemSchema = z.object({
+  pk: z.string(),
+  sk: z.string(),
+  senderId: z.string(),
+  message: z.object({
+    parts: z.array(
+      z.object({
+        type: z.enum(["text", "image"]),
+        content: z.string(),
+        metadata: z.record(z.string(), z.unknown()).optional(),
+      })
+    ),
+  }),
+  timestamp: z.string(),
+});
+
 export { userInputSchema, userItemSchema, channelItemSchema, channelInputSchema };
