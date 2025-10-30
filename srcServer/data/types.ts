@@ -54,6 +54,18 @@ export interface MessageItem {
   timestamp: string;
 }
 
+export interface MessageBodyInput{
+	channelId?: string;      // required if sending to a channel
+  recipientId?: string;    //required if sending a DM
+	message: {
+		parts:{
+			type: "text" | "image";
+			content: string
+			metadata?: Record<string, any>;
+		}[];
+	}
+}
+
 
 
 //Response

@@ -10,4 +10,8 @@ function getTimeStamp(options?: {dateOnly?: boolean}){
   return now.toLocaleString("sv-SE", { timeZone: "Europe/Stockholm" });
 }
 
-export {getTimeStamp}
+function getUTCTimeStamp(): string {
+	return new Date().toISOString();
+}
+
+export {getTimeStamp, getUTCTimeStamp}

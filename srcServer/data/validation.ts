@@ -1,5 +1,6 @@
 import z from 'zod';
 
+//user
 const userInputSchema = z.object({
 	username: z.string().min(3, 'Username must be at least 3 characters long'),
 	password: z.string().min(6, 'Password must be at least 6 characters long'),
@@ -13,7 +14,7 @@ const userItemSchema = z.object({
 	accessLevel: z.string(),
 });
 
-
+//channels
 const channelItemSchema = z.object({
 	pk: z.string(),
 	sk: z.literal("METADATA"),
@@ -28,6 +29,7 @@ const channelInputSchema = z.object({
   isLocked: z.boolean(),
 });
 
+//messages
 export const messageItemSchema = z.object({
   pk: z.string(),
   sk: z.string(),
