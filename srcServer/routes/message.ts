@@ -7,6 +7,7 @@ import type { RequestBody, MessageBodyInput, errorResponse, MessageItem } from "
 import { PutCommand, GetCommand, QueryCommand } from "@aws-sdk/lib-dynamodb";
 import { getTimeStamp, getUTCTimeStamp } from "../data/getTimeStamp.js";
 import { messageItemSchema, messageQuerySchema } from "../data/validation.js";
+import { nanoid } from "nanoid";
 
 //local types
 type MessageQuery = z.infer<typeof messageQuerySchema>;
@@ -18,7 +19,7 @@ router.post("/", verifyToken, async (req: RequestBody<MessageBodyInput>, res: Re
 	const accessLevel = req.user?.accessLevel
 	const { message, channelId, recipientId } = req.body
 
-	if (!senderId || !message || (!channelId && !recipientId) || message.parts.length === 0) {
+	if (!senderId || !message || (!channelId && !recipientId)) {
 		return res.status(400).send({ error: "Missing required fields" });
 	}
 
@@ -50,7 +51,7 @@ router.post("/", verifyToken, async (req: RequestBody<MessageBodyInput>, res: Re
 		const pk = channelId ? `CHANNEL#${channelId}`
 			: `DM#${[senderId, recipientId].sort().join("#")}`
 
-		const sk = `MESSAGE#${utc}#${crypto.randomUUID()}`
+		const sk = `MESSAGE#${utc}#${nanoid()}`
 
 		const newMessage = {
 			pk,
@@ -95,13 +96,14 @@ router.get("/", verifyToken, async (req: Request, res: Response<MessageItem[] | 
 	//create pk based on if channelId or recipientId is used
 	let pk: string
 	if (channelId) {
-		pk = channelId.toLowerCase()
+		pk = `CHANNEL#${channelId.toLowerCase()}`
 	} else {
 		pk = `DM#${[senderId, recipientId].sort().join("#")}`
 	}
 
 	//create query command
 	try {
+		//if its a channel msg, check if locked
 		if(channelId) {
 			const getChannelCommand = new GetCommand({
 				TableName: tableName,
@@ -135,7 +137,7 @@ router.get("/", verifyToken, async (req: Request, res: Response<MessageItem[] | 
 			return res.status(500).send({ error: "Error validating messages", details: details })
 		}
 		const messages = parsedResult.data;
-
+		console.log("Fetched messages:", messages.length);
 		return res.status(200).send(messages)
 
 	} catch (error) {

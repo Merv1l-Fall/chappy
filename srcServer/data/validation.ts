@@ -38,10 +38,10 @@ export const messageItemSchema = z.object({
     parts: z.array(
       z.object({
         type: z.enum(["text", "image"]),
-        content: z.string(),
+        content: z.string().min(1, "Content cannot be empty"),
         metadata: z.record(z.string(), z.unknown()).optional(),
       })
-    ),
+    ).min(1, "Message must have at least one part"),
   }),
   timestamp: z.string(),
 });

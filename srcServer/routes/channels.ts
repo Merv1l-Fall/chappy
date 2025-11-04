@@ -25,9 +25,10 @@ router.get("/", async (req, res: Response<errorResponse | ChannelOutput[]>) => {
 		//create scan command
 		const command = new ScanCommand({
 			TableName: tableName,
-			FilterExpression: "begins_with(pk, :prefix)",
+			FilterExpression: "begins_with(pk, :prefix) AND sk = :metadata",
 			ExpressionAttributeValues: {
 				":prefix": "CHANNEL#",
+				":metadata": "METADATA",
 			},
 		})
 		//get channels
