@@ -48,7 +48,7 @@ export interface MessageItem {
     parts: {
       type: "text" | "image";
       content: string;
-      metadata?: Record<string, any>;
+      metadata?: Record<string, any> | undefined;
     }[];
   };
   timestamp: string;

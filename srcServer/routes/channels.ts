@@ -39,7 +39,7 @@ router.get("/", async (req, res: Response<errorResponse | ChannelOutput[]>) => {
 			const errorDetails = z.flattenError(parsedItems.error)
 			console.error(errorDetails)
 			console.log(result.Items)
-			return res.status(400).send({ error: "error validating channel data" })
+			return res.status(400).send({ error: "error validating channel data", details: errorDetails })
 		}
 		if (parsedItems.data.length === 0) {
 			return res.status(400).send({ error: "No channels found" })

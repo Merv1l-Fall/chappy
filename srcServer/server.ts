@@ -3,6 +3,7 @@ import cors from 'cors';
 import type { Express, RequestHandler } from 'express';
 import userRouter from './routes/users.js';
 import channelRouter from "./routes/channels.js"
+import messageRouter from "./routes/message.js"
 
 
 
@@ -23,6 +24,7 @@ app.use("/", express.static("./dist"));
 //endpoint for user routes
 app.use("/user", userRouter);
 app.use("/channels", channelRouter)
+app.use("/message", messageRouter)
 
 
 app.listen(port, () => {

@@ -46,4 +46,12 @@ export const messageItemSchema = z.object({
   timestamp: z.string(),
 });
 
-export { userInputSchema, userItemSchema, channelItemSchema, channelInputSchema };
+const messageQuerySchema = z.object({
+  channelId: z.string().optional(),
+  recipientId: z.string().optional(),
+}).refine(
+  (data) => data.channelId || data.recipientId,
+  "Must include either channelId or recipientId"
+);
+
+export { userInputSchema, userItemSchema, channelItemSchema, channelInputSchema, messageQuerySchema };
