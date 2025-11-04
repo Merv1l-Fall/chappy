@@ -1,4 +1,4 @@
-.login-container {
+.register-container {
 	background-color: var(--dark-color-primary);
 	color: var(--dark-color-text);
 	padding: 2rem;
@@ -15,7 +15,7 @@
 	}
 }
 
-.login-form{
+.register-form{
 	display: flex;
 	flex-direction: column;
 	

@@ -1,5 +1,6 @@
 import { useState } from "react"
 import type { ChangeEvent, FormEvent } from "react"
+import "../styling/Register.css"
 
 const Register = () => {
 	const [username, setUsername] = useState("")
@@ -53,12 +54,12 @@ const Register = () => {
 					value={password}
 					onChange={(e: ChangeEvent<HTMLInputElement>) => { setPassword(e.target.value) }}
 				/>
-				<label htmlFor="confirm-password">Password</label>
+				<label htmlFor="confirm-password">Confirm password</label>
 				<input
 					type="password"
 					id="confirm-password"
 					name="confirm-password"
-					placeholder="Enter your password"
+					placeholder="Confirm password"
 					value={confirmPassword}
 					onChange={(e: ChangeEvent<HTMLInputElement>) => { setConfirmPassword(e.target.value) }}
 				/>
