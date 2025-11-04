@@ -1,5 +1,6 @@
 import express from "express";
 import z from "zod";
+import { nanoid } from "nanoid";
 import type { Router, Response } from "express";
 import bcrypt from "bcrypt";
 import { createToken, verifyToken } from "../data/auth.js";
@@ -172,6 +173,21 @@ router.delete("/delete", verifyToken, async (req: RequestBody<{password: string 
 	} catch (error) {
 		console.error("Error deleting user:", error);
 		return res.status(500).send({ error: "Internal server error" });
+	}
+});
+
+//guest login
+
+router.post("/guest-login", async (req, res: Response<JwtResponse | errorResponse>) => {
+	try {
+		//create a token with guest access level
+		const guestId = `GUEST#${nanoid(6)}`;
+		const token = createToken(guestId, "guest");
+		
+		return res.status(200).send({ success: true, token})
+	} catch (error) {
+		console.error("Error when logging in guest", error)
+		return res.status(500).send({ error: "Internal server error", details: error })
 	}
 });
 

@@ -14,13 +14,23 @@ const Login = () => {
 	const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
 		e.preventDefault();
 
-		if (!username || !password) {
-   			setError("Please enter both username and password");
-    		return;
-  		}
+		if (!username && !password) {
+			setError("Please enter username and password");
+			return;
+		}
+
+		if (!username) {
+			setError("Please enter a username");
+			return;
+		}
+
+		if (!password) {
+			setError("Please enter a password");
+			return;
+		}
 
 		try {
-			const data = await login({username, password})
+			const data = await login({ username, password })
 			authStore.login({
 				userId: data.userId,
 				accessLevel: data.accessLevel,
@@ -40,28 +50,29 @@ const Login = () => {
 			<form className="login-form" onSubmit={handleSubmit}>
 				<label htmlFor="username">Username</label>
 				<input
-				type="text" 
-				id="username"
-				placeholder="Enter your username"
-				name="username"
-				value={username} 
-				onChange={(e: ChangeEvent<HTMLInputElement>) => {setUsername(e.target.value)}}
+					type="text"
+					id="username"
+					placeholder="Enter your username"
+					name="username"
+					value={username}
+					onChange={(e: ChangeEvent<HTMLInputElement>) => { setUsername(e.target.value) }}
 				/>
 				<label htmlFor="password">Password</label>
-				<input 
-				type="password" 
-				id="password" 
-				name="password" 
-				placeholder="Enter your password"
-				value={password}
-				onChange={(e: ChangeEvent<HTMLInputElement>) => {setPassword(e.target.value)}}
+				<input
+					type="password"
+					id="password"
+					name="password"
+					placeholder="Enter your password"
+					value={password}
+					onChange={(e: ChangeEvent<HTMLInputElement>) => { setPassword(e.target.value) }}
 				/>
 				<span className="error-display">{error}</span>
 				<div className="form-btn-container">
 					<button className="login-btn form-btn" type="submit">
 						Login
 					</button>
-					<button className="guest-btn form-btn">
+					<button className="guest-btn form-btn"
+					type="button">
 						Continue as guest
 					</button>
 				</div>

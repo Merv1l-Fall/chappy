@@ -34,6 +34,13 @@
 		color: var(--dark-color-text);
 	}
 
+	.error-display{
+		color: rgb(250, 48, 48);
+		font-size: 1rem;
+		margin-top: 0.2rem;
+		min-height: 1.1rem;
+	}
+
 	.form-btn-container{
 		margin-top: 1rem;
 		display: flex;
