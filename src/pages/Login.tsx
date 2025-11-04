@@ -2,7 +2,7 @@ import "../styling/Login.css"
 import { useState } from "react"
 import type { ChangeEvent, FormEvent } from "react"
 import { useAuthStore } from "../store/LoginStore"
-import { login } from "../api/user"
+import { login, guestLogin } from "../api/user"
 
 const Login = () => {
 	const [username, setUsername] = useState("")
@@ -10,6 +10,16 @@ const Login = () => {
 	const [error, setError] = useState("")
 
 	const authStore = useAuthStore()
+
+	const handleGuestLogin = async () => {
+		try {
+			const data = await guestLogin()
+			authStore.login(data.token)
+
+			//TODO Redirect to dashboard or home page
+	} catch (error) {
+			console.error("Guest login failed:", error)
+	}}
 
 	const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
 		e.preventDefault();
@@ -31,12 +41,8 @@ const Login = () => {
 
 		try {
 			const data = await login({ username, password })
-			authStore.login({
-				userId: data.userId,
-				accessLevel: data.accessLevel,
-				token: data.token,
-			})
-			console.log("Login successful")
+			authStore.login(data.token)
+			
 			//TODO Redirect to dashboard or home page
 
 		} catch (error) {
@@ -72,7 +78,8 @@ const Login = () => {
 						Login
 					</button>
 					<button className="guest-btn form-btn"
-					type="button">
+					type="button"
+					onClick={handleGuestLogin}>
 						Continue as guest
 					</button>
 				</div>

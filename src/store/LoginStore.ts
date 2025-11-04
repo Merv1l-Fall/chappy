@@ -1,41 +1,54 @@
-import {create} from "zustand"
+import { create } from "zustand";
+import { jwtDecode } from "jwt-decode";
 
-export type User = {
-	userId: string
-	accessLevel: "admin" | "user" | "guest"
-	token: string
+export type AccessLevel = "admin" | "user" | "guest";
+
+export interface TokenPayload {
+	userId: string;
+	accessLevel: AccessLevel;
 }
 
 interface AuthState {
-	user: User | null
-	login: (user: User) => void
-	logout: () => void
-	isLoggedIn: () => boolean
+	userId: string | null;
+	accessLevel: AccessLevel | null;
+	token: string | null;
+	login: (token: string) => void;
+	logout: () => void;
+	isLoggedIn: () => boolean;
 }
 
 const useAuthStore = create<AuthState>((set, get) => ({
-  user: (() => {
-    const token = localStorage.getItem("token");
-    const userId = localStorage.getItem("userId");
-    const accessLevel = localStorage.getItem("accessLevel") as User["accessLevel"];
-    return token && userId && accessLevel ? { token, userId, accessLevel } : null;
-  })(),
+	userId: (() => {
+		const token = localStorage.getItem("token");
+		if (!token) return null;
+		const payload = jwtDecode<TokenPayload>(token);
+		return payload.userId;
+	})(),
+	accessLevel: (() => {
+		const token = localStorage.getItem("token");
+		if (!token) return null;
+		const payload = jwtDecode<TokenPayload>(token);
+		return payload.accessLevel;
+	})(),
+	token: localStorage.getItem("token"),
 
-  login: (user: User) => {
-    set({ user });
-    localStorage.setItem("token", user.token);
-    localStorage.setItem("userId", user.userId);
-    localStorage.setItem("accessLevel", user.accessLevel);
-  },
+	login: (token: string) => {
+		const payload = jwtDecode<TokenPayload>(token);
+		set({
+			userId: payload.userId,
+			accessLevel: payload.accessLevel,
+			token,
+		});
+		localStorage.setItem("token", token);
+		console.log("Login successful", payload.accessLevel, payload.userId)
+	},
 
-  logout: () => {
-    set({ user: null });
-    localStorage.removeItem("token");
-    localStorage.removeItem("userId");
-    localStorage.removeItem("accessLevel");
-  },
+	logout: () => {
+		set({ userId: null, accessLevel: null, token: null });
+		localStorage.removeItem("token");
+	},
 
-  isLoggedIn: () => !!get().user,
+	isLoggedIn: () => !!get().token,
 }));
 
 export { useAuthStore };

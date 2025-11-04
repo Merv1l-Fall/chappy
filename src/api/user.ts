@@ -9,19 +9,31 @@ export interface LoginRequest {
 	password: string
 }
 
-async function login(data: LoginRequest): Promise<LoginResponse>{
+async function login(data: LoginRequest): Promise<LoginResponse> {
 	const res = await fetch("/api/user/login", {
 		method: "POST",
-		headers: {"Content-Type": "application/json"},
+		headers: { "Content-Type": "application/json" },
 		body: JSON.stringify(data),
 	});
 
 	if (!res.ok) {
 		const errorData = await res.json();
 		throw new Error(`Login failed: ${errorData?.error}`);
-
-	}
+	};
 	return res.json();
 };
 
-export { login };
+async function guestLogin(): Promise<LoginResponse> {
+	const res = await fetch("/api/user/guest-login", {
+		method: "POST",
+		headers: { "Content-type": "application/json" },
+	});
+
+	if (!res.ok) {
+		const errorData = await res.json();
+		throw new Error(`Guest login failed: ${errorData?.error}`);
+	};
+	return res.json();
+};
+
+export { login, guestLogin };
