@@ -22,9 +22,9 @@ app.use(express.json());
 app.use("/", express.static("./dist"));
 
 //endpoint for user routes
-app.use("/user", userRouter);
-app.use("/channels", channelRouter)
-app.use("/message", messageRouter)
+app.use("/api/user", userRouter);
+app.use("/api/channels", channelRouter)
+app.use("/api/message", messageRouter)
 
 
 app.listen(port, () => {
