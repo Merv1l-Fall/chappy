@@ -3,7 +3,7 @@ import z from "zod";
 import type { Router, Request, Response } from "express"
 import { verifyToken } from "../data/auth.js";
 import { db, tableName } from "../data/dynamoDb.js"
-import type { RequestBody, MessageBodyInput, errorResponse, MessageItem } from "../data/types.js";
+import type { RequestBody, MessageBodyInput, errorResponse, MessageItem, RequestQuery } from "../data/types.js";
 import { PutCommand, GetCommand, QueryCommand } from "@aws-sdk/lib-dynamodb";
 import { getTimeStamp, getUTCTimeStamp } from "../data/getTimeStamp.js";
 import { messageItemSchema, messageQuerySchema } from "../data/validation.js";
@@ -76,7 +76,7 @@ router.post("/", verifyToken, async (req: RequestBody<MessageBodyInput>, res: Re
 	}
 });
 
-router.get("/", verifyToken, async (req: Request, res: Response<MessageItem[] | [] | errorResponse>) => {
+router.get("/", verifyToken, async (req: RequestQuery<MessageQuery>, res: Response<MessageItem[] | [] | errorResponse>) => {
 
 	//validate queries
 	const parsed = messageQuerySchema.safeParse(req.query);
@@ -98,7 +98,7 @@ router.get("/", verifyToken, async (req: Request, res: Response<MessageItem[] | 
 	if (channelId) {
 		pk = `CHANNEL#${channelId.toLowerCase()}`
 	} else {
-		pk = `DM#${[senderId, recipientId].sort().join("#")}`
+		pk = `DM#${[senderId, recipientId].sort().join("#").toLowerCase()}`
 	}
 
 	//create query command

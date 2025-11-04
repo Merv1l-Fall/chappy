@@ -81,3 +81,4 @@ export interface successResponse {
 
 //request
 export type RequestBody<T> = Request<{}, {}, T>;
+export type RequestQuery<T> = Request<{}, {}, {}, T>;
