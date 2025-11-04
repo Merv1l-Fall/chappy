@@ -69,12 +69,12 @@
 			}
 		}
 
-		.login-btn{
+		.register-btn{
 			background-color: var(--color-accent);
 			
 		}
 
-		.guest-btn{
+		.back-btn{
 			background-color: var(--dark-color-background);
 		}
 	}

@@ -1,28 +1,11 @@
-import "../styling/Login.css"
 import { useState } from "react"
 import type { ChangeEvent, FormEvent } from "react"
-import { useAuthStore } from "../store/LoginStore"
-import { login, guestLogin } from "../api/user"
-import { Link } from "react-router-dom"
 
-const Login = () => {
+const Register = () => {
 	const [username, setUsername] = useState("")
 	const [password, setPassword] = useState("")
 	const [error, setError] = useState("")
-
-	const authStore = useAuthStore()
-
-	const handleGuestLogin = async () => {
-		try {
-			const data = await guestLogin()
-			authStore.login(data.token)
-			setError("")
-
-			//TODO Redirect to dashboard or home page
-		} catch (error) {
-			console.error("Guest login failed:", error)
-		}
-	}
+	const [confirmPassword, setConfirmPassword] = useState("")
 
 	const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
 		e.preventDefault();
@@ -42,23 +25,16 @@ const Login = () => {
 			return;
 		}
 
-		try {
-			const data = await login({ username, password })
-			authStore.login(data.token)
-			setError("")
-
-			//TODO Redirect to dashboard or home page
-
-		} catch (error) {
-			console.error("Login failed:", error)
-			setError("Invalid username or password");
+		if (password !== confirmPassword) {
+			setError("Passwords do not match");
+			return;
 		}
-
 	}
+
 	return (
-		<div className="login-container">
+		<div className="register-container">
 			<h1>Welcome to Chappy!</h1>
-			<form className="login-form" onSubmit={handleSubmit}>
+			<form className="register-form" onSubmit={handleSubmit}>
 				<label htmlFor="username">Username</label>
 				<input
 					type="text"
@@ -77,21 +53,31 @@ const Login = () => {
 					value={password}
 					onChange={(e: ChangeEvent<HTMLInputElement>) => { setPassword(e.target.value) }}
 				/>
+				<label htmlFor="confirm-password">Password</label>
+				<input
+					type="password"
+					id="confirm-password"
+					name="confirm-password"
+					placeholder="Enter your password"
+					value={confirmPassword}
+					onChange={(e: ChangeEvent<HTMLInputElement>) => { setConfirmPassword(e.target.value) }}
+				/>
 				<span className="error-display">{error}</span>
 				<div className="form-btn-container">
-					<button className="login-btn form-btn" type="submit">
-						Login
+					<button className="register-btn form-btn" type="submit">
+						Register
 					</button>
-					<button className="guest-btn form-btn"
+					<button className="back-btn form-btn"
 						type="button"
-						onClick={handleGuestLogin}>
-						Continue as guest
+						onClick={() => {
+							//TODO Redirect to login page
+						}}>
+						Back to login
 					</button>
 				</div>
-				<Link to={"/register"} className="create-account">No account? Create one here!</Link>
 			</form>
 		</div>
 	)
 }
 
-export default Login
+export default Register
