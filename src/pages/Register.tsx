@@ -1,12 +1,18 @@
-import { useState } from "react"
-import type { ChangeEvent, FormEvent } from "react"
-import "../styling/Register.css"
+import { useState } from "react";
+import type { ChangeEvent, FormEvent } from "react";
+import "../styling/Register.css";
+import { register } from "../api/user";
+import { useAuthStore } from "../store/LoginStore";
+import { Link } from "react-router-dom";
+import { CreateAccountSchema } from "../data/frontendValidation";
 
 const Register = () => {
-	const [username, setUsername] = useState("")
-	const [password, setPassword] = useState("")
-	const [error, setError] = useState("")
-	const [confirmPassword, setConfirmPassword] = useState("")
+	const [username, setUsername] = useState("");
+	const [password, setPassword] = useState("");
+	const [error, setError] = useState("");
+	const [confirmPassword, setConfirmPassword] = useState("");
+
+	const authStore = useAuthStore();
 
 	const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
 		e.preventDefault();
@@ -30,7 +36,24 @@ const Register = () => {
 			setError("Passwords do not match");
 			return;
 		}
-	}
+		const inputs = { username, password };
+
+		try {
+			const parsed = CreateAccountSchema.safeParse(inputs);
+			if (!parsed.success) {
+				const firstError = parsed.error.issues[0].message;
+				setError(firstError);
+				return;
+			}
+
+			const data = await register( parsed.data );
+			authStore.login(data.token);
+			setError("");
+		} catch (error) {
+			console.error("Registration failed:", error);
+			setError("Registration failed. Username may already be taken.");
+		}
+	};
 
 	return (
 		<div className="register-container">
@@ -43,7 +66,9 @@ const Register = () => {
 					placeholder="Enter your username"
 					name="username"
 					value={username}
-					onChange={(e: ChangeEvent<HTMLInputElement>) => { setUsername(e.target.value) }}
+					onChange={(e: ChangeEvent<HTMLInputElement>) => {
+						setUsername(e.target.value);
+					}}
 				/>
 				<label htmlFor="password">Password</label>
 				<input
@@ -52,7 +77,9 @@ const Register = () => {
 					name="password"
 					placeholder="Enter your password"
 					value={password}
-					onChange={(e: ChangeEvent<HTMLInputElement>) => { setPassword(e.target.value) }}
+					onChange={(e: ChangeEvent<HTMLInputElement>) => {
+						setPassword(e.target.value);
+					}}
 				/>
 				<label htmlFor="confirm-password">Confirm password</label>
 				<input
@@ -61,24 +88,22 @@ const Register = () => {
 					name="confirm-password"
 					placeholder="Confirm password"
 					value={confirmPassword}
-					onChange={(e: ChangeEvent<HTMLInputElement>) => { setConfirmPassword(e.target.value) }}
+					onChange={(e: ChangeEvent<HTMLInputElement>) => {
+						setConfirmPassword(e.target.value);
+					}}
 				/>
 				<span className="error-display">{error}</span>
 				<div className="form-btn-container">
 					<button className="register-btn form-btn" type="submit">
 						Register
 					</button>
-					<button className="back-btn form-btn"
-						type="button"
-						onClick={() => {
-							//TODO Redirect to login page
-						}}>
+					<Link to={"/login"} className="back-btn form-btn" type="button">
 						Back to login
-					</button>
+					</Link>
 				</div>
 			</form>
 		</div>
-	)
-}
+	);
+};
 
-export default Register
+export default Register;

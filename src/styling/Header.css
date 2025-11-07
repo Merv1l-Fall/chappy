@@ -1,0 +1,36 @@
+.header{
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	padding: 0.5rem 2rem;
+	background-color: var(--dark-color-background);
+	color: var(--dark-color-text);
+	width: 100%;
+	border-bottom: 2px solid var(--dark-color-primary);
+
+	h1{
+		font-size: 1.5rem;
+		font-weight: 400;
+	}
+	.header-inner-container{
+		display: flex;
+		align-items: center;
+		gap: 1rem;
+		
+		a{
+			/* text-decoration: none; */
+			color: var(--dark-color-text);
+		}
+	}
+
+	.profile-container {
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+
+		.name-text {
+			font-size: 1rem;
+			font-weight: 300;
+		}
+	}
+}

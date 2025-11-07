@@ -10,15 +10,14 @@
 	flex-direction: column;	  */
 	width: 100%;
 
-	h1{
+	h1 {
 		font-size: 1.5rem;
 	}
 }
 
-.register-form{
+.register-form {
 	display: flex;
 	flex-direction: column;
-	
 
 	label {
 		margin-top: 1.5rem;
@@ -34,26 +33,26 @@
 		color: var(--dark-color-text);
 	}
 
-	.error-display{
+	.error-display {
 		color: rgb(250, 48, 48);
 		font-size: 1rem;
 		margin-top: 0.2rem;
-		min-height: 1.1rem;
+		min-height: 2.2rem;
 	}
 
-	.create-account{
+	.create-account {
 		margin-top: 0.2rem;
 		color: rgb(142, 139, 139);
 		font-size: 1rem;
 		cursor: pointer;
 	}
 
-	.form-btn-container{
-		margin-top: 1rem;
+	.form-btn-container {
+		/* margin-top: 1rem; */
 		display: flex;
 		gap: 1rem;
 
-		.form-btn{
+		.form-btn {
 			border: none;
 			border-radius: 8px;
 			padding-top: 0.8rem;
@@ -64,18 +63,21 @@
 			color: var(--dark-color-text);
 			cursor: pointer;
 
-			&:hover{
+			&:hover {
 				opacity: 0.8;
 			}
 		}
 
-		.register-btn{
+		.register-btn {
 			background-color: var(--color-accent);
-			
 		}
 
-		.back-btn{
+		.back-btn {
+			text-align: center;
 			background-color: var(--dark-color-background);
+			text-decoration: none;
+			color: var(--dark-color-text);
+			
 		}
 	}
 }

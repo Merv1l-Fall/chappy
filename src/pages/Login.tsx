@@ -4,6 +4,7 @@ import type { ChangeEvent, FormEvent } from "react"
 import { useAuthStore } from "../store/LoginStore"
 import { login, guestLogin } from "../api/user"
 import { Link } from "react-router-dom"
+import { LoginSchema } from "../data/frontendValidation"
 
 const Login = () => {
 	const [username, setUsername] = useState("")
@@ -42,8 +43,17 @@ const Login = () => {
 			return;
 		}
 
+		const inputs = { username, password }
+
 		try {
-			const data = await login({ username, password })
+			const parsed = LoginSchema.safeParse(inputs)
+			if (!parsed.success) {
+  				const firstMessage = parsed.error.issues[0].message;
+ 				setError(firstMessage);
+  				return;
+			}
+
+			const data = await login( parsed.data )
 			authStore.login(data.token)
 			setError("")
 

@@ -18,6 +18,11 @@
 .login-form{
 	display: flex;
 	flex-direction: column;
+
+	a{
+				text-decoration: none;
+				color: var(--dark-color-text);
+			}
 	
 
 	label {
@@ -47,6 +52,7 @@
 		font-size: 1rem;
 		cursor: pointer;
 	}
+	
 
 	.form-btn-container{
 		margin-top: 1rem;
@@ -77,5 +83,6 @@
 		.guest-btn{
 			background-color: var(--dark-color-background);
 		}
+
 	}
 }
