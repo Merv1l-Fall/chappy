@@ -2,9 +2,12 @@ import "../styling/Login.css"
 import { useState } from "react"
 import type { ChangeEvent, FormEvent } from "react"
 import { useAuthStore } from "../store/LoginStore"
-import { login, guestLogin } from "../api/user"
-import { Link } from "react-router-dom"
+import { login, guestLogin, fetchUsersForDM } from "../api/user"
+import { Link, useNavigate } from "react-router-dom"
 import { LoginSchema } from "../data/frontendValidation"
+
+//temporary fetchCHannels import
+import { fetchChannels } from "../api/channel"
 
 const Login = () => {
 	const [username, setUsername] = useState("")
@@ -12,14 +15,16 @@ const Login = () => {
 	const [error, setError] = useState("")
 
 	const authStore = useAuthStore()
+	const navigate = useNavigate()
 
 	const handleGuestLogin = async () => {
 		try {
 			const data = await guestLogin()
 			authStore.login(data.token)
 			setError("")
+			fetchChannels()
+			navigate("/dashboard")
 
-			//TODO Redirect to dashboard or home page
 		} catch (error) {
 			console.error("Guest login failed:", error)
 		}
@@ -55,9 +60,11 @@ const Login = () => {
 
 			const data = await login( parsed.data )
 			authStore.login(data.token)
+			fetchChannels()
+			fetchUsersForDM()
+			navigate("/dashboard")
 			setError("")
 
-			//TODO Redirect to dashboard or home page
 
 		} catch (error) {
 			console.error("Login failed:", error)

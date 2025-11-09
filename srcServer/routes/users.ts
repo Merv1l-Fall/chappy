@@ -7,7 +7,7 @@ import { createToken, verifyToken } from "../data/auth.js";
 import { db, tableName } from "../data/dynamoDb.js";
 import type { JwtResponse, successResponse, UserBody, UserItem, errorResponse, RequestBody } from "../data/types.js";
 import { userInputSchema, userItemSchema } from "../data/validation.js";
-import { PutCommand, QueryCommand, DeleteCommand, GetCommand } from "@aws-sdk/lib-dynamodb";
+import { PutCommand, QueryCommand, DeleteCommand, GetCommand, ScanCommand } from "@aws-sdk/lib-dynamodb";
 
 const router: Router = express.Router();
 
@@ -190,5 +190,40 @@ router.post("/guest-login", async (req, res: Response<JwtResponse | errorRespons
 		return res.status(500).send({ error: "Internal server error", details: error })
 	}
 });
+
+//get all users
+interface UserListResponse {
+	users: string[]
+}
+
+//no idea why this error happens but functionally it works
+router.get("/", verifyToken, async (req, res: Response<UserListResponse | errorResponse>) => {
+	try {
+	const scanCommand = new ScanCommand({
+		TableName: tableName,
+		FilterExpression: "begins_with(pk, :prefix)",
+		ExpressionAttributeValues: {":prefix": "USER#"}
+	});
+		const result = await db.send(scanCommand)
+		if (!result.Items) {
+			console.log("No users found")
+			return res.status(200).send({users: []})
+		}
+		const users: string[] = [];
+			for (const item of result.Items) {
+      const parsed = userItemSchema.safeParse(item);
+      if (!parsed.success) {
+        console.error("Failed to parse user:", z.flattenError(parsed.error));
+        continue;
+      }
+      users.push(parsed.data.username);
+    }
+
+    return res.status(200).send({ users });
+	} catch (error) {
+		console.error("Error fetching users:", error)
+		return res.status(500).send({ error: "Internal server error", details: error })
+	}
+})
 
 export default router;

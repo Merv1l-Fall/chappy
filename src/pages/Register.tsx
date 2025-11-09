@@ -1,10 +1,11 @@
 import { useState } from "react";
 import type { ChangeEvent, FormEvent } from "react";
 import "../styling/Register.css";
-import { register } from "../api/user";
+import { fetchUsersForDM, register } from "../api/user";
 import { useAuthStore } from "../store/LoginStore";
 import { Link } from "react-router-dom";
 import { CreateAccountSchema } from "../data/frontendValidation";
+import { fetchChannels } from "../api/channel";
 
 const Register = () => {
 	const [username, setUsername] = useState("");
@@ -49,6 +50,8 @@ const Register = () => {
 			const data = await register( parsed.data );
 			authStore.login(data.token);
 			setError("");
+			fetchChannels()
+			fetchUsersForDM()
 		} catch (error) {
 			console.error("Registration failed:", error);
 			setError("Registration failed. Username may already be taken.");

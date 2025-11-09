@@ -1,0 +1,92 @@
+/* ChatsBox.css */
+
+.ChatsBox {
+	flex-grow: 1;
+	max-width: 18rem;
+	min-height: 100vh;
+	background: var(--dark-color-background);
+	display: flex;
+	flex-direction: column;
+	border-right: 2px solid var(--dark-color-primary);
+	padding-top: 0.2rem;
+}
+
+/* Channel/DM Switcher */
+.page-switcher {
+	display: flex;
+	gap: 1rem;
+	margin-bottom: 1rem;
+	padding-bottom: 0.2rem;
+	border-bottom: 2px solid var(--dark-color-primary);
+	padding-left: 1rem;
+	padding-right: 1rem;
+}
+
+.page-switcher button {
+	flex: 1;
+	background: transparent;
+	border: none;
+	padding: 0.5rem;
+	padding-left: 1rem;
+	padding-right: 1rem;
+	font-size: 1rem;
+	cursor: pointer;
+	color: var(--dark-color-text);
+	border-radius: 2rem;
+	transition: background 0.15s;
+
+	&:disabled {
+		cursor: not-allowed;
+		color: gray
+	}
+}
+
+.page-switcher button.active {
+	background: #424242;
+
+}
+
+/* Section Heading */
+.ChatsBox h2 {
+	padding-left: 2rem;
+	margin-bottom: 1rem;
+	padding-bottom: 1rem;
+	border-bottom: 2px solid var(--dark-color-primary);
+	font-size: 1.2rem;
+	color: var(--dark-color-text);
+}
+
+/* Chat list container */
+.chats-container {
+	flex: 1;
+	padding-left: 2rem;
+	overflow-y: auto;
+}
+
+/* List spacing */
+.chats-list {
+	display: flex;
+	flex-direction: column;
+	gap: 0.4rem;
+}
+
+/* Individual row */
+.chat-row {
+	padding-top: 0.2rem;
+	padding-bottom: 0.2rem;
+	cursor: pointer;
+	font-size: 1rem;
+	color: var(--dark-color-text);
+	border-radius: 4px;
+	transition: background 0.15s;
+	display: flex;
+	align-items: center;
+
+	.dm-name{
+		margin-left: 0.5rem;
+	}
+}
+
+.chat-row:hover {
+	background: #1e1e1e;
+}

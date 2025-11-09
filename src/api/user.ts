@@ -1,3 +1,8 @@
+import { apiClient } from "./clientHelper"
+import useDashboardStore from "../store/DashboardStore"
+import { useAuthStore } from "../store/LoginStore"
+import type { DirectChat } from "../store/DashboardStore"
+
 export interface LoginResponse {
 	token: string
 	userId: string
@@ -56,4 +61,21 @@ async function register(data: LoginRequest): Promise<RegisterResponse> {
 	
 }
 
-export { login, guestLogin, register };
+async function fetchUsersForDM() {
+	console.log("fetching users for DM")
+	const currentUserId = useAuthStore.getState().userId;
+ 	if (!currentUserId) return;
+
+	const path = "/api/user"
+	const res = await apiClient(path)
+	console.log("API response for DM users:", res)
+	
+	const dmList: DirectChat[] = res.users
+    .filter((userId: string) => userId !== currentUserId)
+    .map((userId: string) => ({ otherUser: userId }));
+	
+	useDashboardStore.getState().setDMs(dmList)
+	console.log("fethed users for DM;", useDashboardStore.getState().dms)
+}
+
+export { login, guestLogin, register, fetchUsersForDM };

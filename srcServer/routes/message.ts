@@ -34,7 +34,7 @@ router.post("/", verifyToken, async (req: RequestBody<MessageBodyInput>, res: Re
 			})
 			const channel = await db.send(getChannelCommand)
 			if (!channel.Item) {
-				return res.status(404).send({ error: "Recieving channel not found" })
+				return res.status(404).send({ error: "Receiving channel not found" })
 			}
 
 			const isLocked = channel.Item.isLocked
@@ -49,7 +49,7 @@ router.post("/", verifyToken, async (req: RequestBody<MessageBodyInput>, res: Re
 		const local = getTimeStamp()
 
 		const pk = channelId ? `CHANNEL#${channelId}`
-			: `DM#${[senderId, recipientId].sort().join("#")}`
+			: `DM#${[senderId, recipientId].sort().join("#")}`//dubbelkolla så det fungerar som tänkt, vem som skickar och tar emot
 
 		const sk = `MESSAGE#${utc}#${nanoid()}`
 
@@ -98,6 +98,7 @@ router.get("/", verifyToken, async (req: RequestQuery<MessageQuery>, res: Respon
 	if (channelId) {
 		pk = `CHANNEL#${channelId.toLowerCase()}`
 	} else {
+		//!!skapa en funktion för join.sort.lowercase?
 		pk = `DM#${[senderId, recipientId].sort().join("#").toLowerCase()}`
 	}
 
