@@ -12,15 +12,40 @@ import { nanoid } from "nanoid";
 //local types
 type MessageQuery = z.infer<typeof messageQuerySchema>;
 
+type MessageResponse = {
+  messageId: string;
+  senderId: string;
+   message: {
+    parts: {
+      type: "text" | "image";
+      content: string;
+      metadata?: Record<string, any> | undefined;
+    }[];
+  };
+  timestamp: string;
+};
+
+function formatMessage(item: MessageItem): MessageResponse {
+  return {
+    messageId: item.sk.split("#").slice(1).join("#"),
+    senderId: item.senderId,
+    message: item.message,
+    timestamp: item.timestamp,
+  };
+}
+
 const router: Router = express.Router();
 
-router.post("/", verifyToken, async (req: RequestBody<MessageBodyInput>, res: Response<void | errorResponse>) => {
+router.post("/", verifyToken, async (req: RequestBody<MessageBodyInput>, res: Response<MessageResponse | errorResponse>) => {
 	const senderId = req.user?.userId
 	const accessLevel = req.user?.accessLevel
 	const { message, channelId, recipientId } = req.body
 
 	if (!senderId || !message || (!channelId && !recipientId)) {
 		return res.status(400).send({ error: "Missing required fields" });
+	}
+	if (recipientId && accessLevel === "guest") {
+ 		return res.status(403).send({ error: "Guests cannot send direct messages" });
 	}
 
 	try {
@@ -49,7 +74,7 @@ router.post("/", verifyToken, async (req: RequestBody<MessageBodyInput>, res: Re
 		const local = getTimeStamp()
 
 		const pk = channelId ? `CHANNEL#${channelId}`
-			: `DM#${[senderId, recipientId].sort().join("#")}`//dubbelkolla så det fungerar som tänkt, vem som skickar och tar emot
+			: `DM#${[senderId, recipientId].sort().join("#").toLowerCase()}`//dubbelkolla så det fungerar som tänkt, vem som skickar och tar emot
 
 		const sk = `MESSAGE#${utc}#${nanoid()}`
 
@@ -69,83 +94,95 @@ router.post("/", verifyToken, async (req: RequestBody<MessageBodyInput>, res: Re
 
 		await db.send(new PutCommand({ TableName: tableName, Item: parsed.data }));
 
-		return res.sendStatus(201)
+		const { senderId: sender, message: msg, timestamp } = parsed.data;
+		const messageId = parsed.data.sk.split("#").slice(1).join("#");
+
+		return res.status(201).send(formatMessage(parsed.data))
 	} catch (error) {
 		console.error("error sending message", error)
 		return res.status(500).send({ error: "internal server error" })
 	}
 });
 
-router.get("/", verifyToken, async (req: RequestQuery<MessageQuery>, res: Response<MessageItem[] | [] | errorResponse>) => {
+router.get("/", verifyToken, async ( req: RequestQuery<MessageQuery>, res: Response<MessageResponse[] | errorResponse>) => {
+    const senderId = req.user?.userId;
+    const accessLevel = req.user?.accessLevel;
 
-	//validate queries
-	const parsed = messageQuerySchema.safeParse(req.query);
-	if (!parsed.success) {
-		return res.status(400).send({error: "Invalid queries", details: z.flattenError(parsed.error) });
-	}
+    // Validate JWT / sender
+    if (!senderId) {
+      return res.status(400).send({ error: "Missing or invalid token" });
+    }
 
-	const { channelId, recipientId } = parsed.data;
-	const senderId = req.user?.userId
-	const userAccessLevel = req.user?.accessLevel //might need later
+    // Validate queries
+    const parsedQuery = messageQuerySchema.safeParse(req.query);
+    if (!parsedQuery.success) {
+      return res
+        .status(400)
+        .send({ error: "Invalid queries", details: z.flattenError(parsedQuery.error) });
+    }
 
-	//validate senderId/JWT
-	if (!senderId) {
-		return res.status(400).send({ error: "Missing or invalid token" })
-	}
+    const { channelId, recipientId } = parsedQuery.data;
 
-	//create pk based on if channelId or recipientId is used
-	let pk: string
-	if (channelId) {
-		pk = `CHANNEL#${channelId.toLowerCase()}`
-	} else {
-		//!!skapa en funktion för join.sort.lowercase?
-		pk = `DM#${[senderId, recipientId].sort().join("#").toLowerCase()}`
-	}
+    // Require at least one identifier
+    if (!channelId && !recipientId) {
+      return res.status(400).send({ error: "Missing channelId or recipientId" });
+    }
 
-	//create query command
-	try {
-		//if its a channel msg, check if locked
-		if(channelId) {
-			const getChannelCommand = new GetCommand({
-				TableName: tableName,
-				Key: {pk: `CHANNEL#${channelId}`, sk: "METADATA"}
-			});
-			const channel = await db.send(getChannelCommand);
-			if(!channel.Item){
-				return res.status(404).send({ error: "Channel not found"});
-			}
-			const { isLocked } = channel.Item;
-			if (isLocked && userAccessLevel !== "user" && userAccessLevel !== "admin") {
-          return res.status(403).send({ error: "Unauthorized: channel is locked" });
+    try {
+      // Build PK
+
+      const pk = channelId
+        ? `CHANNEL#${channelId.toLowerCase()}`
+        : `DM#${[senderId, recipientId].sort().join("#").toLowerCase()}`;
+
+      // If channel, check if locked
+      if (channelId) {
+        const getChannelCommand = new GetCommand({
+          TableName: tableName,
+          Key: { pk: `CHANNEL#${channelId}`, sk: "METADATA" },
+        });
+
+        const channel = await db.send(getChannelCommand);
+        if (!channel.Item) {
+          return res.status(404).send({ error: "Channel not found" });
         }
-		}
 
-		const queryCommand = new QueryCommand({
-			TableName: tableName,
-			KeyConditionExpression: "pk = :pk AND begins_with(sk, :skPrefix)",
-			ExpressionAttributeValues: {
-				":pk": pk,
-				":skPrefix": "MESSAGE#",
-			},
-			ScanIndexForward: false, //sort by descending timestamp
-		});
+        const { isLocked } = channel.Item;
+        if (isLocked && accessLevel !== "user" && accessLevel !== "admin") {
+          return res.status(403).send({ error: "Missing authorization for this channel" });
+        }
+      }
 
-		//execute query and validate results
-		const queryResult = await db.send(queryCommand);
-		const parsedResult = messageItemSchema.array().safeParse(queryResult.Items);
-		if (!parsedResult.success) {
-			const details = z.flattenError(parsedResult.error)
-			return res.status(500).send({ error: "Error validating messages", details: details })
-		}
-		const messages = parsedResult.data;
-		console.log("Fetched messages:", messages.length);
-		return res.status(200).send(messages)
+      // Query messages
+      const queryCommand = new QueryCommand({
+        TableName: tableName,
+        KeyConditionExpression: "pk = :pk AND begins_with(sk, :skPrefix)",
+        ExpressionAttributeValues: {
+          ":pk": pk,
+          ":skPrefix": "MESSAGE#",
+        },
+        ScanIndexForward: false, // newest first
+      });
 
-	} catch (error) {
-		console.error("Error fetching messages", error)
-		res.status(500).send({ error: "Internal server error" })
-		return;
-	}
-});
+      const queryResult = await db.send(queryCommand);
+
+      // Validate items
+      const parsedMessages = messageItemSchema.array().safeParse(queryResult.Items);
+      if (!parsedMessages.success) {
+        const details = z.flattenError(parsedMessages.error);
+        return res.status(500).send({ error: "Error validating messages", details });
+      }
+
+      // Format for response (hide pk/sk)
+      const messages = parsedMessages.data.map(formatMessage)
+
+      return res.status(200).send(messages);
+    } catch (error) {
+      console.error("Error fetching messages", error);
+      return res.status(500).send({ error: "Internal server error" });
+    }
+  }
+);
+
 
 export default router;
