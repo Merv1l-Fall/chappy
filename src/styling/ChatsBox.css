@@ -3,8 +3,6 @@
 .ChatsBox {
 	flex-grow: 1;
 	max-width: 18rem;
-	min-height: 100vh;
-	background: var(--dark-color-background);
 	display: flex;
 	flex-direction: column;
 	border-right: 2px solid var(--dark-color-primary);

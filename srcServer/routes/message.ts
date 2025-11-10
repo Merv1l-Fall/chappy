@@ -104,7 +104,7 @@ router.post("/", verifyToken, async (req: RequestBody<MessageBodyInput>, res: Re
 	}
 });
 
-router.get("/", verifyToken, async ( req: RequestQuery<MessageQuery>, res: Response<MessageResponse[] | errorResponse>) => {
+router.get("/", verifyToken, async ( req: RequestQuery<MessageQuery>, res: Response<MessageResponse[] | errorResponse | "No messages found"> ) => {
     const senderId = req.user?.userId;
     const accessLevel = req.user?.accessLevel;
 
@@ -165,6 +165,9 @@ router.get("/", verifyToken, async ( req: RequestQuery<MessageQuery>, res: Respo
       });
 
       const queryResult = await db.send(queryCommand);
+	  if (!queryResult.Items) {
+		res.status(204).send("No messages found")
+	  }
 
       // Validate items
       const parsedMessages = messageItemSchema.array().safeParse(queryResult.Items);
