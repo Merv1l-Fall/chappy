@@ -10,26 +10,31 @@ interface MessageProps {
 const MessageComponent = ({ msg, isOwn }: MessageProps) => {
 	return (
 		<div className={`message ${isOwn ? "sent" : "received"}`}>
-			{ !isOwn && <ProfilePic name={msg.senderId} size={2} />}
-			<div className="message-bubble">
-				{msg.message.parts.map((part, index) => {
-					if (part.type === "text") {
-						return (
-							<p key={index} className="message-text">
-								{part.content}
-							</p>
-						);
-					}
+			{!isOwn && <ProfilePic name={msg.senderId} size={2} />}
+			<div>
+				<p className={`sender ${isOwn ? "sent" : "received"}`}>{msg.senderId}</p>
+				<div className="message-bubble">
+					{msg.message.parts.map((part, index) => {
+						if (part.type === "text") {
+							return (
+								<p key={index} className="message-text">
+									{part.content}
+								</p>
+							);
+						}
 
-					if (part.type === "image") {
-						return <img key={index} src={part.content} alt="message content" className="message-image" />;
-					}
+						if (part.type === "image") {
+							return (
+								<img key={index} src={part.content} alt="message content" className="message-image" />
+							);
+						}
 
-					return null;
-				})}
-				<p className="message-time">{msg.timestamp}</p>
+						return null;
+					})}
+					<p className="message-time">{msg.timestamp}</p>
+				</div>
 			</div>
-			{ isOwn && <ProfilePic name={msg.senderId} size={2} />}
+			{isOwn && <ProfilePic name={msg.senderId} size={2} />}
 		</div>
 	);
 };

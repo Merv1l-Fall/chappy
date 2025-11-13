@@ -34,3 +34,13 @@
 		}
 	}
 }
+
+/* Subheader */
+
+.sub-header{
+	border-bottom: 2px solid var(--dark-color-primary);
+	padding: 1.2rem;
+	h2 {
+		font-size: 1.5rem
+	}
+}

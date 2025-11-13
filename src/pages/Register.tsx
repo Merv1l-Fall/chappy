@@ -6,6 +6,7 @@ import { useAuthStore } from "../store/LoginStore";
 import { Link } from "react-router-dom";
 import { CreateAccountSchema } from "../data/frontendValidation";
 import { fetchChannels } from "../api/channel";
+import { useNavigate } from "react-router-dom"
 
 const Register = () => {
 	const [username, setUsername] = useState("");
@@ -14,6 +15,7 @@ const Register = () => {
 	const [confirmPassword, setConfirmPassword] = useState("");
 
 	const authStore = useAuthStore();
+	const navigate = useNavigate();
 
 	const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
 		e.preventDefault();
@@ -52,6 +54,7 @@ const Register = () => {
 			setError("");
 			fetchChannels()
 			fetchUsersForDM()
+			navigate("/dashboard")
 		} catch (error) {
 			console.error("Registration failed:", error);
 			setError("Registration failed. Username may already be taken.");

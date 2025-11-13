@@ -12,7 +12,6 @@
 }
 
 .message-bubble {
-  max-width: 70%;
   padding: 10px;
   margin-right: 0.4rem;
   margin-left: 0.4rem;
@@ -39,4 +38,18 @@
   color: #888;
   text-align: right;
   margin-top: 4px;
+}
+
+.sender {
+	font-size: 0.9rem;
+	color: #888;
+}
+
+.sender.received {
+	margin-left: 0.4rem;
+}
+
+.sender.sent {
+	margin-right: 0.4rem;
+	text-align: right;
 }

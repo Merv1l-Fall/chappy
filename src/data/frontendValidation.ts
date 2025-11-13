@@ -20,3 +20,13 @@ export const LoginSchema = z.object({
 	username: z.string().min(1, "Username is required"),
 	password: z.string().min(1, "Password is required"),
 });
+
+export const createChannelSchema = z.object({
+	name: z
+		.string()
+		.min(3, "Channelname cant be shorter than 3 characters")
+		.max(15, "Channelname cant be longer than 15 characters")
+		.regex(/^[a-z0-9_]+$/, "Channelname can only contain lowercase letters, numbers, and underscores"),
+
+	isLocked: z.boolean(),
+});

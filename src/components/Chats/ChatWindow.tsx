@@ -3,6 +3,7 @@ import useChatStore from "../../store/ChatStore";
 import { fetchMessages, sendMessage } from "../../api/messageApi";
 import "../../styling/ChatWindow.css";
 import MessageComponent from "../Message";
+import SubHeader from "../SubHeader";
 import { useAuthStore } from "../../store/LoginStore";
 
 // interface ChatWindowProps {
@@ -42,6 +43,7 @@ const ChatWindow = () => {
 
 	return (
 		<div className="chat-window-container">
+			<SubHeader/>
 		<div className="chat-window">
 			<div className="chat-messages">
 				{messages.length === 0 && <p className="no-messages">Wow... it's so empty here</p>}

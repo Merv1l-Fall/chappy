@@ -44,14 +44,45 @@
 
 }
 
+.chat-row.disabled {
+	cursor: not-allowed;
+	color: #424242;
+
+	&:hover{
+		background: none;
+	}
+}
+
 /* Section Heading */
-.ChatsBox h2 {
+.chatsbox-middle-container {
 	padding-left: 2rem;
+	padding-right: 2rem;
 	margin-bottom: 1rem;
 	padding-bottom: 1rem;
 	border-bottom: 2px solid var(--dark-color-primary);
-	font-size: 1.2rem;
+	display: flex;
+	justify-content: space-between;
 	color: var(--dark-color-text);
+	
+	h2{
+		font-size: 1.1rem;
+	}
+
+	.create-channel-btn{
+		border: none;
+		background: none;
+		/* padding: 0.4rem; */
+		font-size: 1.1rem;
+		border-radius: 8px;
+		color: var(--dark-color-text);
+		cursor: pointer;
+		transition: color 0.2s ease-in-out;
+		font-weight: 600;
+
+		&:hover{
+			color: #424242;
+		}
+	}
 }
 
 /* Chat list container */
