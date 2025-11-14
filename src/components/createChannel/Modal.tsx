@@ -1,15 +1,14 @@
 import React from "react";
 import "../../styling/CreateChannel.css"
 
-const CreateChannelModal = ({
-	isOpen,
-	onClose,
-	children,
-}: {
+interface ModalProps {
 	isOpen: boolean;
 	onClose: () => void;
 	children: React.ReactNode;
-}) => {
+	title?: string;
+}
+
+const Modal = ({ isOpen, onClose, children}: ModalProps) => {
 	if (!isOpen) return null;
 
 	return (
@@ -27,4 +26,4 @@ const CreateChannelModal = ({
 	);
 };
 
-export default CreateChannelModal;
+export default Modal;

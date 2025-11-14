@@ -3,6 +3,7 @@ import { create } from "zustand";
 export interface Channel {
   name: string;
   isLocked: boolean;
+  creatorId: string;
 }
 
 export interface DirectChat {

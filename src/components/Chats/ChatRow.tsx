@@ -13,6 +13,7 @@ interface ChatRowProps  {
 const ChatRow = ({ label, isLocked, isChannelsView }: ChatRowProps) => {
 const chatStore = useChatStore();
 const accessLevel = useAuthStore().accessLevel;
+// const userId = useAuthStore().userId;
 
 const isDisabled = isChannelsView && isLocked && accessLevel === "guest";
 

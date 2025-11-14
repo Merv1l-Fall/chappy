@@ -4,7 +4,7 @@ import "../../styling/ChatsBox.css"
 import { useAuthStore } from "../../store/LoginStore.js"
 import type { Channel, DirectChat } from "../../store/DashboardStore.js"
 import CreateChannel from "../createChannel/CreateChannel.js"
-import CreateChannelModal from "../createChannel/CreateChannelOverlay.js"
+import Modal from "../createChannel/Modal.js"
 
 interface ChatsBoxProps {
 	channels: Channel[];
@@ -32,9 +32,9 @@ const ChatsBox = ({channels, dms}: ChatsBoxProps) => {
 				<ChatList items={isChannelsView ? channels : dms} view={isChannelsView ? "channels" : "dms"} />
 			</div>
 
-			<CreateChannelModal isOpen={isOverlay} onClose={() => setIsOverlay(false)}>
+			<Modal isOpen={isOverlay} onClose={() => setIsOverlay(false)}>
 				<CreateChannel onClose={() => setIsOverlay(false)}/>
-			</CreateChannelModal>
+			</Modal>
 		</div>
 	)
 }
