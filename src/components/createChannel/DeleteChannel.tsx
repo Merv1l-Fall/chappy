@@ -1,5 +1,5 @@
 import "../../styling/DeleteChannel.css";
-import { deleteChannel, fetchChannels } from "../../api/channel";
+import { deleteChannel } from "../../api/channel";
 import { useState } from "react";
 
 const DeleteChannel = ({ onClose, channelId, onDeleted }: { onClose?: () => void; channelId: string; onDeleted?: () => void; }) => {
