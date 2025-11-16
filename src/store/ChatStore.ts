@@ -21,6 +21,13 @@ type ChatState = {
   setMessages: (messages: Message[]) => void;
   setActiveChat: (chat: ActiveChat) => void;
   setIsLoading: (loading: boolean) => void;
+  reset: () => void;
+};
+
+const initialState = {
+  messages: [] as Message[],
+  activeChat: null as ActiveChat,
+  isLoading: false,
 };
 
 const useChatStore = create<ChatState>((set) => ({
@@ -30,6 +37,11 @@ const useChatStore = create<ChatState>((set) => ({
   setMessages: (messages) => set({ messages }),
   setActiveChat: (chat) => set({ activeChat: chat }),
   setIsLoading: (loading) => set({ isLoading: loading }),
+  reset: () => set(() => ({ 
+    messages: initialState.messages, 
+    activeChat: initialState.activeChat, 
+    isLoading: initialState.isLoading 
+  })),
 }));
 
 export default useChatStore;

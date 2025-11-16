@@ -101,6 +101,7 @@
 
 /* Individual row */
 .chat-row {
+	display: flex;
 	padding-top: 0.2rem;
 	padding-bottom: 0.2rem;
 	cursor: pointer;
@@ -113,6 +114,19 @@
 
 	.dm-name{
 		margin-left: 0.5rem;
+	}
+
+	.delete-btn{
+		background: none;
+		border: none;
+		margin-left: auto;
+		margin-right: 0.5rem;
+		cursor: pointer;
+		transition: all 0.1s ease-in-out;
+
+		&:hover{
+			scale: 1.2;
+		}
 	}
 }
 

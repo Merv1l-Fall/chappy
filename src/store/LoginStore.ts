@@ -14,6 +14,7 @@ interface AuthState {
 	token: string | null;
 	login: (token: string) => void;
 	logout: () => void;
+	reset: () => void;
 	isLoggedIn: () => boolean;
 }
 
@@ -46,6 +47,11 @@ const useAuthStore = create<AuthState>((set, get) => ({
 	logout: () => {
 		set({ userId: null, accessLevel: null, token: null });
 		localStorage.removeItem("token");
+	},
+
+	reset: () => {
+		set({ userId: null, accessLevel: null, token: null });
++		localStorage.removeItem("token");
 	},
 
 	isLoggedIn: () => !!get().token,

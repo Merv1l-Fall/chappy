@@ -2,6 +2,7 @@ import { apiClient } from "./clientHelper"
 import useDashboardStore from "../store/DashboardStore"
 import { useAuthStore } from "../store/LoginStore"
 import type { DirectChat } from "../store/DashboardStore"
+import useChatStore from "../store/ChatStore"
 
 export interface LoginResponse {
 	token: string
@@ -78,4 +79,38 @@ async function fetchUsersForDM() {
 	console.log("fethed users for DM;", useDashboardStore.getState().dms)
 }
 
-export { login, guestLogin, register, fetchUsersForDM };
+async function deleteUser(password: string) {
+    const currentUserId = useAuthStore.getState().userId
+    const userAccessLevel = useAuthStore.getState().accessLevel
+
+    if (!currentUserId) {
+        throw new Error("Not authenticated")
+    }
+    if (userAccessLevel === "guest") {
+        throw new Error("Guest accounts cannot be deleted")
+    }
+
+    try {
+        await apiClient("/api/user/delete", {
+            method: "DELETE",
+            body: JSON.stringify({ password }),
+        })
+
+        // reset client state after successful deletion
+        useAuthStore.getState().reset?.()
+        useDashboardStore.getState().reset?.()
+        useChatStore.getState().reset?.()
+    } catch (err) {
+        console.error("Failed to delete user:", err)
+        // rethrow so callers can show the error message
+        throw err instanceof Error ? err : new Error(String(err))
+    }
+}
+
+function Logout() {
+		useChatStore.getState().reset();
+		useDashboardStore.getState().reset();
+		useAuthStore.getState().reset()
+}
+
+export { login, guestLogin, register, fetchUsersForDM, deleteUser, Logout };

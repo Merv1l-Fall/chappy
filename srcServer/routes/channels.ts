@@ -4,7 +4,14 @@ import { db, tableName } from "../data/dynamoDb.js";
 import { getTimeStamp } from "../data/getTimeStamp.js";
 import { channelItemSchema, channelInputSchema } from "../data/validation.js";
 import type { ChannelItem, ChannelInput, errorResponse, RequestBody, successResponse } from "../data/types.js";
-import { ScanCommand, QueryCommand, PutCommand, GetCommand, DeleteCommand } from "@aws-sdk/lib-dynamodb";
+import {
+	ScanCommand,
+	QueryCommand,
+	PutCommand,
+	GetCommand,
+	DeleteCommand,
+	BatchWriteCommand,
+} from "@aws-sdk/lib-dynamodb";
 import { verifyToken } from "../data/auth.js";
 
 const router = express.Router();
@@ -149,6 +156,42 @@ router.delete("/:id", verifyToken, async (req: Request, res: Response<successRes
 		if (channel.creatorId !== username) {
 			return res.status(403).send({ error: "You are not the creator of this channel" });
 		}
+
+		//delete all messages insode the channel aswell
+		let ExclusiveStartKey: Record<string, any> | undefined = undefined;
+		do {
+			const queryCommand = new QueryCommand({
+				TableName: tableName,
+				KeyConditionExpression: "pk = :pk AND begins_with(sk, :prefix)",
+				ExpressionAttributeValues: {
+					":pk": channelId,
+					":prefix": "MESSAGE#",
+				},
+				ProjectionExpression: "pk, sk",
+				ExclusiveStartKey,
+			});
+			const queryRes = await db.send(queryCommand);
+			const items = queryRes.Items ?? [];
+
+			// delete in groups of 25
+			for (let i = 0; i < items.length; i += 25) {
+				const batch = items.slice(i, i + 25).map((it: any) => ({
+					DeleteRequest: {
+						Key: { pk: it.pk, sk: it.sk },
+					},
+				}));
+
+				let resp = await db.send(new BatchWriteCommand({ RequestItems: { [tableName]: batch } }));
+
+				// retry unprocessed items
+				while (resp.UnprocessedItems && Object.keys(resp.UnprocessedItems).length) {
+					resp = await db.send(new BatchWriteCommand({ RequestItems: resp.UnprocessedItems }));
+				}
+			}
+
+			ExclusiveStartKey = queryRes.LastEvaluatedKey as any | undefined;
+		} while (ExclusiveStartKey);
+
 		//delete channel
 		const deleteCommand = new DeleteCommand({
 			TableName: tableName,

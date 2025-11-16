@@ -18,21 +18,27 @@ const DeleteChannel = ({ onClose, channelId, onDeleted }: { onClose?: () => void
 			onDeleted?.()
 			setStatus("Channel deleted")
 			setSuccess(true)
-		} catch (err: any) {
+		} catch (error) {
 			setStatus("Failed to delete channel, try again later")
 			
 		} finally {
 			setIsLoading(false)
 		}
 	}
+
+	const handleCancel = () => {
+		onClose?.()
+		setSuccess(false)
+	}
+
 	return (
 		<div className="delete-channel">
 			<h3>Are you sure you want to delete {channelId}</h3>
-			<div>
-				<button className="cnofirm-btn" onClick={handleConfirm} disabled={isLoading}>{isLoading? "Deleteing..." : "Confirm"}</button>
-				<button className="cancel-btn" onClick={onClose} disabled={isLoading}>{success? "Close" : "Cancel"}</button>
+			<div className="delete-channel-actions">
+				<button className="confirm-btn" onClick={handleConfirm} disabled={isLoading || success}>{isLoading? "Deleteing..." : "Confirm"}</button>
+				<button className="cancel-btn" onClick={handleCancel} disabled={isLoading}>{success? "Close" : "Cancel"}</button>
 			</div>
-			<span className="status-display">{status}</span>
+			<p className="status-display">{status}</p>
 		</div>
 	);
 };

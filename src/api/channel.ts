@@ -32,6 +32,7 @@ async function createChannel({ name, isLocked }: ChannelInput) {
 
 	const { channels, setChannels } = useDashboardStore.getState();
 	setChannels([...channels, channel]);
+	fetchChannels();
 
 	return channel;
 }
@@ -39,13 +40,17 @@ async function createChannel({ name, isLocked }: ChannelInput) {
 async function deleteChannel( channelId: string) {
 	const response = await apiClient(`${path}/${channelId}`, {
 		method: "DELETE",
+
+	}, {
+		raw: true
 	});
 
 	if (!response.ok) {
 		const error = await response.json().catch(() => ({}));
 		throw new Error(error.message || "Failed to delete channel");
 	}
-	return response.json();
+	fetchChannels();
+	return
 }
 
 export { fetchChannels, createChannel, deleteChannel };

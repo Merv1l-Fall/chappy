@@ -1,0 +1,58 @@
+.user-dropdown {
+  position: absolute;
+  top: 4rem;
+  right: 6rem;  
+
+
+  background: var(--dark-color-primary);
+  border-radius: 8px;
+  padding: 1rem;
+  min-width: 13rem;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+
+  animation: fadeIn 0.12s ease-out;
+}
+
+.user-dropdown .user-name {
+  margin: 0;
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: var(--dark-color-text);
+}
+
+
+.user-dropdown .delete-btn {
+  padding: 0.5rem 0.7rem;
+  border-radius: 6px;
+  border: none;
+  background: #d32f2f;
+  color: white;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background 0.2s ease, opacity 0.2s ease;
+}
+
+.user-dropdown .delete-btn:hover:not(:disabled) {
+  background: #b71c1c;
+}
+
+.user-dropdown .delete-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Fade animation */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

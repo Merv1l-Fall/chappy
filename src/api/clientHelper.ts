@@ -1,6 +1,5 @@
-export async function apiClient(path: string, options: RequestInit = {}) {
+export async function apiClient(path: string, options: RequestInit = {}, opts: { raw?: boolean } = {}) {
   const token = localStorage.getItem("token");
-//   console.log(token)
 
   const res = await fetch(path, {
     ...options,
@@ -11,15 +10,30 @@ export async function apiClient(path: string, options: RequestInit = {}) {
     },
   });
 
+
   if (!res.ok) {
     let msg = "Unexpected API error";
     try {
-      const errorData = await res.json();
-      msg = errorData.error || msg;
-    } catch {}
-	console.log("API ERROR:", msg)
-    throw new Error(msg);
+      const text = await res.text();
+      const parsed = text ? JSON.parse(text) : null;
+      msg = parsed?.error || parsed || msg;
+    } catch {
+      try {
+        const text = await res.text();
+        msg = text || msg;
+      } catch {}
+    }
+    console.log("API ERROR:", msg);
+    throw new Error(String(msg));
   }
 
-  return res.json();
+  if (opts.raw) return res;
+  
+  try {
+    const text = await res.text();
+    if (!text) return null;
+    return JSON.parse(text);
+  } catch {
+    return null;
+  }
 }
